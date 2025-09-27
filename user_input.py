@@ -25,8 +25,8 @@ def select_option():
         output_folder = output_upperbody_folder
         croptype = 1
     elif option == "2":
-        top_margin_value = 0.25
-        bottom_margin_value = 0.25
+        top_margin_value = 0.7 #changed from 0.25 to 3.0 to inclue more space above head
+        bottom_margin_value = 0.7 # changed from 0.25 to include the shoulders of person
         debug_output = debug_face_folder
         output_folder = output_face_folder
         croptype = 2
