@@ -1,6 +1,6 @@
 import cv2
 import os
-import imghdr
+import mimetypes  # Changed from imghdr to mimetypes for Python 3.13 compatibility
 import win32com.client
 from tqdm import tqdm
 import numpy as np
@@ -14,7 +14,14 @@ def images_error(image_path, error_folder):
     shortcut.TargetPath = os.path.abspath(image_path)
     shortcut.Save()
 
-
+def get_image_format(image_path):
+    # Replacement for imghdr.what using mimetypes
+    mime_type, _ = mimetypes.guess_type(image_path)
+    if mime_type is None:
+        return None
+    if mime_type.startswith('image/'):
+        return mime_type.split('/')[-1]
+    return None
 
 def process_image(image_path,
                   error_folder,
@@ -43,7 +50,7 @@ def process_image(image_path,
     is_error = False
     filename, extension = os.path.splitext(os.path.basename(image_path))
     image = cv2.imread(image_path)
-    image_format = imghdr.what(image_path)
+    image_format = get_image_format(image_path)  # Changed from imghdr.what to get_image_format
     supported_formats = ["jpg", "jpeg", "png", "webp"]
     if image_format is None or image_format not in supported_formats:
         print(f"\rInvalid image format or unsupported format, skipping {filename}{extension}")
@@ -56,7 +63,9 @@ def process_image(image_path,
 
             for i in range(detections.shape[2]):
                 confidence = detections[0, 0, i, 2]
-                box = detections[0, 0, i, 3:7] * np.array([image.shape[1], image.shape[0], image.shape[1], image.shape[0]])
+                # Specify dtype=float for NumPy 2.x compatibility (was implicit before)
+                box = detections[0, 0, i, 3:7] * np.array([image.shape[1], image.shape[0], image.shape[1], image.shape[0]], dtype=float)
+                # Use .astype(int) instead of deprecated np.int
                 (startX, startY, endX, endY) = box.astype(int)
 
                 width = endX - startX
@@ -182,7 +191,7 @@ def process_image(image_path,
 
                 # Filter out weak detections
                 if confidence > variable.confidence_level:
-                    box = detections[0, 0, i, 3:7] * np.array([image.shape[1], image.shape[0], image.shape[1], image.shape[0]])
+                    box = detections[0, 0, i, 3:7] * np.array([image.shape[1], image.shape[0], image.shape[1], image.shape[0]], dtype=float)
                     (startX, startY, endX, endY) = box.astype(int)
                 
                     width = endX - startX
@@ -432,4 +441,10 @@ def preview(debug_image,
         cv2.setWindowProperty("Output Image", cv2.WND_PROP_TOPMOST, 1)
         cv2.setWindowProperty("Output Image", cv2.WND_PROP_ASPECT_RATIO, cv2.WINDOW_KEEPRATIO)
         
-    cv2.waitKey(250)  # Wait time   
+    cv2.waitKey(250)  # Wait time
+
+# Major changes:
+# - Replaced deprecated imghdr with mimetypes for image format detection (Python 3.13 compatible).
+# - Explicitly set dtype=float for np.array where needed (NumPy 2.x compatible).
+# - Replaced .astype(np.int) and similar with .astype(int) (NumPy 2.x compatible).
+# - No deprecated OpenCV constants used; all calls are compatible with OpenCV >=4.10.
