@@ -6,6 +6,9 @@ from tqdm import tqdm
 import numpy as np
 import variable
 
+# Get the directory where this script is located
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 def images_error(image_path, error_folder):
     shell = win32com.client.Dispatch("WScript.Shell")
     filename_shortcut = os.path.basename(image_path)
@@ -46,7 +49,10 @@ def process_image(image_path,
     filename = ""
     error_msg = ""
 
-    net = cv2.dnn.readNetFromCaffe("deploy.prototxt.txt", "res10_300x300_ssd_iter_140000.caffemodel")
+    # Build paths relative to the script directory
+    prototxt_path = os.path.join(SCRIPT_DIR, "deploy.prototxt.txt")
+    caffemodel_path = os.path.join(SCRIPT_DIR, "res10_300x300_ssd_iter_140000.caffemodel")
+    net = cv2.dnn.readNetFromCaffe(prototxt_path, caffemodel_path)
     is_error = False
     filename, extension = os.path.splitext(os.path.basename(image_path))
     image = cv2.imread(image_path)
