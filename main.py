@@ -6,6 +6,7 @@ from image_processing import process_image
 from user_input import select_option, preview_window, clean_output
 import variable
 from tqdm import tqdm
+import time
 
 input_folder = variable.input_folder
 output_res = variable.output_res
@@ -13,6 +14,8 @@ error_folder = variable.error_folder
 preview_output_res = variable.preview_output_res
 preview_debug_max_res = variable.preview_debug_max_res
 
+# Worker function for multiprocessing.
+# Unpacks arguments and calls process_image for each image.
 def process_image_worker(args):
     input_file, \
     error_folder, \
@@ -40,8 +43,9 @@ def process_image_worker(args):
                                 bottom_margin_value)
     return error_count
 
-
 if __name__ == '__main__':
+    # Main entry point for the program.
+    # Handles user input, folder setup, image processing, and reporting.
     def main():
             top_margin_value, \
             bottom_margin_value, \
@@ -96,6 +100,8 @@ if __name__ == '__main__':
         
             return parallel
 
+    # Handles parallel image processing using multiprocessing.
+    # Sets up worker arguments, manages pool, and reports results.
     def multithread(top_margin_value, \
                     bottom_margin_value, \
                     debug_output, \
@@ -153,3 +159,5 @@ if __name__ == '__main__':
             print(f"Error images: {error.value}")
 
     main()
+
+    time.sleep(5)
